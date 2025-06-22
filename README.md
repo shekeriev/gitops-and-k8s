@@ -10,9 +10,11 @@ Realistically, pick just the parts that make sense in the current situation. :)
 
 Files are provided in the following structure:
 
-* *demo* folder contains the actual demo steps
+* ***demo*** folder contains the actual demo steps
 
-* *slides.pdf* file contains the slides of the presentation
+* ***preparation*** folder contains a set of steps and files that could be used to setup the environment
+
+* ***slides.pdf*** file contains the slides of the presentation
 
 ## Requirements
 
@@ -23,6 +25,14 @@ From a workload/component point of view, the demo environment configuration look
 ![image](README.png)
 
 The actual demonstration uses a single all-in-one Kubernetes cluster created with ***minikube***. Of course, another setup, either on-premises or in the cloud, could be used. Depending on the difference, the demo script/steps may need some adjustment.
+
+## Video
+
+A recording of the actual presentation (with a tiny demo part - just a portion of the steps described in this repository) will be published by **Dev.bg** on their channel(s).
+
+A separate recording of the complete demo that will give you a basis for comparisson between **Flux CD** and **ArgoCD** is (will be, after 22.06) available here: <https://www.youtube.com/@DimitarZahariev>
+
+For best experience watch both and go over the demo steps alone. :)
 
 ## Related content
 

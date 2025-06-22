@@ -1,0 +1,56 @@
+podSecurityContext:
+  fsGroup: 0
+service:
+  http:
+    type: LoadBalancer
+    loadBalancerIP: <GITEA-LB-IP>
+    port: 3000
+    annotations:
+      metallb.universe.tf/allow-shared-ip: "gitea"
+  ssh:
+    type: LoadBalancer
+    loadBalancerIP: <GITEA-LB-IP>
+    port: 22
+    ClusterIP:
+    annotations:
+      metallb.universe.tf/allow-shared-ip: "gitea"
+persistence:
+  size: 100Gi
+gitea:
+  podAnnotations:
+  admin:
+    username: "<GITEA-USER>"
+    password: "<GITEA-USER-PASSWORD>"
+    email: "<GITEA-USER-EMAIL>"
+  config:
+    database:
+      DB_TYPE: postgres
+    session:
+      PROVIDER: db
+    cache:
+      ADAPTER: memory
+    queue:
+      TYPE: level
+    indexer:
+      ISSUE_INDEXER_TYPE: bleve
+      REPO_INDEXER_ENABLED: true
+    server:
+      ROOT_URL: http://gitea.demo.lab/
+      PROTOCOL: http
+      HTTP_PORT: 3000
+      SSH_DOMAIN: gitea.demo.lab
+      SSH_LISTEN_PORT: 2222
+    webhook:
+      SKIP_TLS_VERIFY: true
+    actions:
+      ENABLED: true
+    service:
+      DISABLE_REGISTRATION: true
+      SHOW_REGISTRATION_BUTTON: false
+    
+postgresql-ha:
+  enabled: false
+postgresql:
+  enabled: true
+redis-cluster:
+  enabled: false
