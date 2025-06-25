@@ -1,9 +1,3 @@
-Adjuste the **values.yaml** file to match your situation. You should change at least the following:
+Place here your **config.json** file containing your Docker Hub (or another regitry) credentials.
 
-* ***\<GITEA-LB-IP\>*** - with the Load Balancer IP address that you want to use for Gitea
-
-* ***\<GITEA-USER\>*** - with the username you want to use for Gitea
-
-* ***\<GITEA-USER-PASSWORD\>*** - with the desired user password
-
-* ***\<GITEA-USER-EMAIL\>*** - with an email address attached to the user
+You could safely ignore this, but then you should adjust one or two commands during the prepration part.
