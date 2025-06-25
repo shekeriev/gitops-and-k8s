@@ -8,89 +8,9 @@ The demo is planned and organized in a way that makes it easy to follow in a loc
 
 ## Requirements
 
-It is expected that there is a Load Balancer (assumed MetalLB), a local git-based solution (assumed Gitea), and a CI/CD solution (assumed Jenkins). In addition, a read-write access to a container registry (assumed Docker Hub) is expected.
+It is expected that there is a Load Balancer (assumed **MetalLB**), a local git-based solution (assumed **Gitea**), and a CI/CD solution (assumed **Jenkins**). In addition, a read-write access to a container registry (assumed **Docker Hub**) is expected.
 
-Below are a few additional notes for the latter two.
-
-### Gitea
-
-#### Repositories
-
-Clone the following publicly available GitHub repositories in your Gitea instance:
-
-* <https://github.com/shekeriev/gitops-and-k8s-demo-app> clone it as **gitops-app**
-
-* <https://github.com/shekeriev/gitops-and-k8s-demo-app-infra> clone it as **gitops-app-infra**
-
-#### Access Token
-
-Create an **access token** with the following permissions:
-
-* read:misc
-
-* write:repository
-
-* write:user
-
-Store the token somewhere as we will need it later.
-
-### Jenkins
-
-#### Plugins
-
-Make sure that at least the following plugins are installed and enabled:
-
-* Configuration as Code Plugin
-
-* Git plugin
-
-* Kubernetes plugin
-
-* Pipeline
-
-#### Service Account
-
-Assuming that Jenkins is installed in **jenkins** namespace, give cluster-wide admin role to its service account:
-
-```bash
-kubectl create clusterrolebinding jenkins --clusterrole=cluster-admin --serviceaccount=jenkins:jenkins
-```
-
-Of course, for demo purposes, this is fine. However, for a production environment, this should be further restricted.
-
-#### Configuration Map
-
-Assuming that Jenkins is installed in **jenkins** namespace, add a configuration map with container registry credentials:
-
-```bash
-kubectl create configmap docker-config --from-file=./docker/config.json -n jenkins
-```
-
-Of course, don't forget to change the ***./docker/config.json*** to something that matches your situation.
-
-#### Git Credentials
-
-Create Git credentials by visitng **Manage Jenkins** > **Credentials** > **Global** > **Add Credentials**.
-
-Use the following:
-
-* Kind: **Username with password**
-
-* Username: ***username-from-gitea***
-
-* Password: ***access-token-from-gitea***
-
-* ID: **git-credentials**
-
-#### Pipelines
-
-Create two pipelines by using the respective Jenkinsfile from the **gitops-app** repository:
-
-* **pipeline-cicd** - use the file **Jenkinsfile-CICD**
-
-* **pipeline-gitops** - use the file **Jenkinsfile-GitOps**
-
-Ideally, they should be configured to poll the **gitops-app** repository or to be triggered by a web hook. However, please note that only one od them should be active. The **pipeline-cicd** is used just as a starting point and the **pipeline-gitops** is the pipeline we actually need. It represents "an evolution" of the classic CI/CD pipeline.
+Detailed explanation on how to prepare an evironment like the one assumed and used, check the **Preparation** document, available [here](../preparation/preparation.md).
 
 ## Demo Steps
 
@@ -98,9 +18,9 @@ Let's assume that we are working in a folder named **demo**. All paths that will
 
 In addition, make sure you cloned the two imported repositories respectively to **demo/gitops-app** and **demo/gitops-app-infra**.
 
-### Without GitOps
+### Without GitOps (manual deployment)
 
-Let's see how the things happen when we do not GitOps implemented.
+Let's see how the things happen when we do not have GitOps implemented and we are using manual but declarative approach to deploy our application.
 
 We will put all the specific implementations like pipelines aside and will use just a single YAML manifest to deploy an application.
 
@@ -163,6 +83,76 @@ kubectl get all
 ```
 
 In fact, with our actions of **observing** the **actual state**, **comparing** it with the **desired state**, and refreshing the cluster's memory, we implemented manually a reconciliation loop which is part of what GitOps (plus other nice stuff) brings on the table.
+
+Don't forget to remove the application
+
+```bash
+kubectl delete -f gitops-app/manifests/application.yaml
+```
+
+### Without GitOps (CI/CD pipeline)
+
+Let's see how the things happen when we do not have GitOps implemented and we are using a CI/CD pipeline to deploy our application. 
+
+Now, we should refer to a tool like Jenkins.
+
+Go to Jenkins UI and start the **pipeline-cicd** pipeline.
+
+After a while our application should be deployed
+
+```bash
+kubectl get pods,svc
+```
+
+Nice. Now, let's do a change. For example, add some text to the **fff** file.
+
+Then stage, commit and push the changes to the repository
+
+```bash
+git add .
+```
+
+```bash
+git commit -m 'application change 1'
+```
+
+```bash
+git push
+```
+
+Now, return to Jenkins UI and start the **pipeline-cicd** pipeline again.
+
+*Note that we are starting it manually for the sake of simplicity. In the real life it would be configured to trigger automatically via a webhook or by polling the repository periodically for changes.*
+
+After a while, the new version of our application will be deployed to the cluster.
+
+Now, if we do a direct change in the running configuration of the application, there won't be anything that will act and rever it.
+
+Let's go ahead and prove this by changing, for example, the number of replicas to 5
+
+```bash
+kubectl scale deployment gitops-app --replicas=5
+```
+
+Check that the changes are there
+
+```bash
+kubectl get pods,svc
+```
+
+Again, the cluster won't do anything on its own to revert our changes because it accepts that if we changed something, it is because we are knowing what we are doing. ;)
+
+Let's clean up by removing our application
+
+```bash
+kubectl delete deployment gitops-app
+```
+
+```bash
+kubectl delete service gitops-app-svc
+```
+
+Now, we are ready to move forward and dive (at least the tip of our toes) into the world of GitOps.
 
 ### FluxCD
 

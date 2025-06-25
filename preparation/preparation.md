@@ -10,7 +10,7 @@ Create and start a Minikube-based Kubernetes cluster
 minikube start --driver=hyperv --hyperv-virtual-switch='NAT vSwitch' --cpus=4 --memory=8196 -p gitops
 ```
 
-*Change at least the **--driver** and the networking connectivity.*
+*Change at least the **--driver** and the networking connectivity to match your setup.*
 
 Should we want to check what other profiles exist, we can do it by executing
 
@@ -43,7 +43,7 @@ Use the following values (or others that match your setup)
  -- Enter Load Balancer End IP: 192.168.99.59
 ```
 
-Check that the current context of kubectl is set correctly
+Check that the current context of **kubectl** is set correctly
 
 ```bash
 kubectl config get-contexts
@@ -57,35 +57,35 @@ Check what Helm repositories you currently have
 helm repo list
 ```
 
-And if the Gitea one is not listed, add it
+And if the **Gitea** one is not listed, add it
 
 ```bash
 helm repo add gitea-charts https://dl.gitea.com/charts/
 ```
 
-Adjust the provided gitea/values.yaml file to match your setup and execute
+Adjust the provided **gitea/values.yaml** file to match your setup and execute
 
 ```bash
 helm install gitea -n gitea gitea-charts/gitea --create-namespace -f gitea/values.yaml
 ```
 
-Watch the progress of Gitea objects transitioning to running state
+Watch the progress of **Gitea** objects transitioning to running state
 
 ```bash
 kubectl get pods -n gitea --watch
 ```
 
-Once all settled, press Ctrl+C to exit and list most of the related objects
+Once all settled, press **Ctrl+C** to exit and list most of the related objects
 
 ```bash
 kubectl get all -n gitea 
 ```
 
-Here, we will assume that the LB address is 192.168.99.51.
+Here, we will assume that the address assigned (in fact, specified in the values file) by the Load Balancer is ***192.168.99.51***.
 
 ## Gitea - Repositories Creation
 
-Navigate to 192.168.99.51:3000 and use the credentials specified in the gitea/values.yaml file.
+Navigate to ***192.168.99.51:3000*** and use the credentials specified in the **gitea/values.yaml** file.
 
 Import/migrate the following sample repostiories:
 
@@ -115,7 +115,7 @@ Check what Helm repositories you currently have
 helm repo list
 ```
 
-And if the Jenkins one is not listed, add it
+And if the **Jenkins** one is not listed, add it
 
 ```bash
 helm repo add jenkins https://charts.jenkins.io
@@ -126,8 +126,8 @@ You may want to update the repositories
 ```bash
 helm repo update
 ```
-
-Install Jenkins by executing the following
+**
+Install **Jenkins** by executing the following
 
 ```bash
 helm install jenkins jenkins/jenkins --namespace=jenkins --create-namespace=true --set controller.admin.password=Parolka-12345 --set controller.serviceType=LoadBalancer 
@@ -135,13 +135,13 @@ helm install jenkins jenkins/jenkins --namespace=jenkins --create-namespace=true
 
 *Of course, adjust the password (**Parolka-12345**) as you like. In addition, you can change or pass other custom values as per the chart specification.*
 
-Watch the progress of Jenkins objects transitioning to running state
+Watch the progress of **Jenkins** objects transitioning to running state
 
 ```bash
 kubectl get pods --namespace jenkins --watch
 ```
 
-Once all settled, press Ctrl+C to exit and list most of the related objects
+Once all settled, press **Ctrl+C** to exit and list most of the related objects
 
 ```bash
 kubectl get all -n jenkins
@@ -153,7 +153,7 @@ Then we must assign specific permissions to **jenkins** service account. In this
 kubectl create clusterrolebinding jenkins --clusterrole=cluster-admin --serviceaccount=jenkins:jenkins
 ```
 
-Depending on our setup, we may need to get where the Jenkins service is accessible. One way to accomplish this is to list the published services
+Depending on our setup, we may need to get where the **Jenkins** service is accessible. One way to accomplish this is to list the published services
 
 ```bash
 minikube -p gitops service list
@@ -187,17 +187,17 @@ Create a config map out of it (adjust the name and/or path to match yours). This
 kubectl create configmap docker-config --from-file=./docker/config.json -n jenkins
 ```
 
-Go to Jenkins UI and create **git-credentials** by going to **Manage Jenkins** > **Credentials** > **Global** > **Add Credentials**.
+Create Git credentials by visitng **Manage Jenkins** > **Credentials** > **Global** > **Add Credentials**.
 
-There use the following settings:
+Use the following:
 
-* Kind: Username with password
+* Kind: **Username with password**
 
-* Username: the user used for Gitea
+* Username: ***username-from-gitea***
 
-* Password: the PAT created in Gitea
+* Password: ***access-token-from-gitea***
 
-* ID: git-credentials
+* ID: **git-credentials**
 
 ## Jenkins - Pipelines
 
@@ -206,6 +206,8 @@ While still in Jenkins UI, create two pipelines by using the respective **Jenkin
 * **pipeline-cicd** - use the file **Jenkinsfile-CICD**. This is an illustration of a "classic" simple CI/CD pipeline
 
 * **pipeline-gitops** - use the file **Jenkinsfile-GitOps**. This is an illustration of how the "classic" pipeline should change to address the transition to GitOps
+
+Ideally, they should be configured to poll the **gitops-app** repository or to be triggered by a web hook. However, please note that only one of them should be active. The **pipeline-cicd** is used just as a starting point and the **pipeline-gitops** is the pipeline we actually need. It represents "an evolution" of the classic CI/CD pipeline.
 
 ## Gitea - Clone repositories (to the demo folder)
 
