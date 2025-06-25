@@ -199,16 +199,6 @@ Use the following:
 
 * ID: **git-credentials**
 
-## Jenkins - Pipelines
-
-While still in Jenkins UI, create two pipelines by using the respective **Jenkinsfile** from the **gitops-app** repository:
-
-* **pipeline-cicd** - use the file **Jenkinsfile-CICD**. This is an illustration of a "classic" simple CI/CD pipeline
-
-* **pipeline-gitops** - use the file **Jenkinsfile-GitOps**. This is an illustration of how the "classic" pipeline should change to address the transition to GitOps
-
-Ideally, they should be configured to poll the **gitops-app** repository or to be triggered by a web hook. However, please note that only one of them should be active. The **pipeline-cicd** is used just as a starting point and the **pipeline-gitops** is the pipeline we actually need. It represents "an evolution" of the classic CI/CD pipeline.
-
 ## Gitea - Clone repositories (to the demo folder)
 
 Navigate to the folder you plan to use for the demo and clone the two repositories you migrated from GitHub.
@@ -224,3 +214,13 @@ And the one for the infrastructure files
 ```bash
 git clone http://192.168.99.51:3000/dimitar/gitops-app-infra
 ```
+
+## Jenkins - Pipelines
+
+Return to Jenkins UI and create two pipelines by using the respective **Jenkinsfile** from the **gitops-app** repository:
+
+* **pipeline-cicd** - use the file **Jenkinsfile-CICD**. This is an illustration of a "classic" simple CI/CD pipeline
+
+* **pipeline-gitops** - use the file **Jenkinsfile-GitOps**. This is an illustration of how the "classic" pipeline should change to address the transition to GitOps
+
+Ideally, they should be configured to poll the **gitops-app** repository or to be triggered by a web hook. However, please note that only one of them should be active. The **pipeline-cicd** is used just as a starting point and the **pipeline-gitops** is the pipeline we actually need. It represents "an evolution" of the classic CI/CD pipeline.

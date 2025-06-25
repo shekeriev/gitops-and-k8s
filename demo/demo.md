@@ -104,7 +104,7 @@ After a while our application should be deployed
 kubectl get pods,svc
 ```
 
-Nice. Now, let's do a change. For example, add some text to the **fff** file.
+Nice. Now, let's do a change. For example, add some text to the **gitops-app/app/index.php** file.
 
 Then stage, commit and push the changes to the repository
 
