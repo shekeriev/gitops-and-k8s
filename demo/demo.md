@@ -39,7 +39,7 @@ We can even check the application by opening the respective URL in a browser.
 Now, what will happen if we change something? For example, the number of replicas
 
 ```bash
-kubectl scale --replicas=5 deployment/gitops-app
+kubectl scale deployment gitops-app --replicas=5
 ```
 
 If we check, will see that the change is there
@@ -113,7 +113,7 @@ git add .
 ```
 
 ```bash
-git commit -m 'application change 1'
+git commit -m "application change 1"
 ```
 
 ```bash
@@ -140,7 +140,7 @@ Check that the changes are there
 kubectl get pods,svc
 ```
 
-Again, the cluster won't do anything on its own to revert our changes because it accepts that if we changed something, it is because we are knowing what we are doing. ;)
+Again, the cluster won't take any action on its own to revert your changes because it accepts that if we changed something, it is because we know what we are doing. ;)
 
 Let's clean up by removing our application
 
@@ -184,11 +184,15 @@ flux check --pre
 
 Go to the Gitea instance and create an empty repository **gitops-flux**.
 
+Once you have it, initiate the bootstrapping process
+
 ```bash
 flux bootstrap git --allow-insecure-http --token-auth --url=http://GITEA-IP:3000/GITEA-USER/gitops-flux --branch=main --path=clusters/dingo --namespace=gitops-flux --force
 ```
 
 *You must substitute **GITEA-IP** and **GITEA-USER** with your values.*
+
+You will be asked to enter your Git repository password. Use the access token generated during the preparation.
 
 Check the newly added objects
 
@@ -198,6 +202,8 @@ kubectl get all -n gitops-flux
 
 Of course, we can try a few other commands, both with **flux** and **kubectl**, to explore our new **FluxCD** deployment.
 
+Check for kustomizations
+
 ```bash
 flux get kustomizations --namespace=gitops-flux
 ```
@@ -206,6 +212,8 @@ flux get kustomizations --namespace=gitops-flux
 kubectl get Kustomizations -n gitops-flux
 ```
 
+Check for registered sources
+
 ```bash
 flux get sources git --namespace=gitops-flux
 ```
@@ -213,6 +221,8 @@ flux get sources git --namespace=gitops-flux
 ```bash
 kubectl get GitRepository -n gitops-flux
 ```
+
+Get details about the **gitops-flux** kustomization
 
 ```bash
 flux tree kustomization gitops-flux --namespace=gitops-flux
@@ -225,6 +235,8 @@ flux trace kustomization gitops-flux --namespace=gitops-flux
 ```bash
 flux logs --flux-namespace=gitops-flux --namespace=gitops-flux
 ```
+
+Finally get some general statistics
 
 ```bash
 flux stats --namespace=gitops-flux
@@ -334,9 +346,13 @@ git commit -m "Add gitops-app Kustomization"
 git push
 ```
 
+Monitor when the new kustomization will appear
+
 ```bash
 flux get kustomizations --namespace=gitops-flux --watch
 ```
+
+And then check for the newly created resources
 
 ```bash
 kubectl -n prd get all
@@ -353,7 +369,7 @@ kubectl delete -n prd deployment gitops-app
 Or change (the number of replicas) a monitored resource 
 
 ```bash
-kubectl scale -n prd --replicas=5 deployment/gitops-app
+kubectl scale deployment gitops-app -n prd --replicas=5
 ```
 
 And observe
@@ -382,6 +398,40 @@ kubectl describe Kustomizations -n gitops-flux gitops-app-prd
 
 ```bash
 flux logs --flux-namespace=gitops-flux --namespace=gitops-flux
+```
+
+Now, you can go ahead and change the application. For example, add some text to the **gitops-app/app/index.php** file.
+
+Then stage, commit and push the changes to the repository
+
+```bash
+git add .
+```
+
+```bash
+git commit -m "application change 2"
+```
+
+```bash
+git push
+```
+
+Now, return to Jenkins UI and start the **pipeline-gitops** pipeline again.
+
+*Note that we are starting it manually for the sake of simplicity. In the real life it would be configured to trigger automatically via a webhook or by polling the repository periodically for changes.*
+
+After a while, the new version of our application will be deployed to the cluster because the GitOps operator (Flux CD in our case) will capture that there is a change in the desired state and will make sure that the actual state is matching the desired one.
+
+Once the pipeline completes, you can observe the changes that will take place in the cluster
+
+```bash
+kubectl get pods -n prd --watch
+```
+
+Or use this one
+
+```bash
+flux get kustomizations --namespace=gitops-flux --watch
 ```
 
 #### App with just YAML manifests
@@ -446,6 +496,40 @@ flux get all --namespace=gitops-flux
 kubectl get all -n plain
 ```
 
+Again, you could go ahead and change the application. For example, add some text to the **gitops-app/app/index.php** file.
+
+Then stage, commit and push the changes to the repository
+
+```bash
+git add .
+```
+
+```bash
+git commit -m "application change 3"
+```
+
+```bash
+git push
+```
+
+Now, return to Jenkins UI and start the **pipeline-gitops** pipeline again.
+
+*Note that we are starting it manually for the sake of simplicity. In the real life it would be configured to trigger automatically via a webhook or by polling the repository periodically for changes.*
+
+After a while, the new version of our application will be deployed to the cluster because the GitOps operator (Flux CD in our case) will capture that there is a change in the desired state and will make sure that the actual state is matching the desired one.
+
+Once the pipeline completes, you can observe the changes that will take place in the cluster
+
+```bash
+kubectl get pods -n plain --watch
+```
+
+Or use this one
+
+```bash
+flux get kustomizations --namespace=gitops-flux --watch
+```
+
 #### App with Helm Chart from Git Source
 
 We will reuse again (***--source=GitRepository/gitops-app***) the Git Repository we registered earlier.
@@ -491,11 +575,45 @@ flux get helmreleases --namespace=gitops-flux --watch
 ```
 
 ```bash
-kubectl -n gitops-app-helm get all
+flux get all --namespace=gitops-flux
 ```
 
 ```bash
-flux get all --namespace=gitops-flux
+kubectl -n gitops-app-helm get all
+```
+
+Again, you could go ahead and change the application. For example, add some text to the **gitops-app/app/index.php** file.
+
+Then stage, commit and push the changes to the repository
+
+```bash
+git add .
+```
+
+```bash
+git commit -m "application change 4"
+```
+
+```bash
+git push
+```
+
+Now, return to Jenkins UI and start the **pipeline-gitops** pipeline again.
+
+*Note that we are starting it manually for the sake of simplicity. In the real life it would be configured to trigger automatically via a webhook or by polling the repository periodically for changes.*
+
+After a while, the new version of our application will be deployed to the cluster because the GitOps operator (Flux CD in our case) will capture that there is a change in the desired state and will make sure that the actual state is matching the desired one.
+
+Once the pipeline completes, you can observe the changes that will take place in the cluster
+
+```bash
+kubectl get pods -n gitops-app-helm --watch
+```
+
+Or use this one
+
+```bash
+flux get helmreleases --namespace=gitops-flux --watch
 ```
 
 #### Capacitor UI
@@ -514,7 +632,7 @@ curl https://raw.githubusercontent.com/gimlet-io/capacitor/main/deploy/k8s/rbac.
 curl https://raw.githubusercontent.com/gimlet-io/capacitor/main/deploy/k8s/manifest.yaml -o capacitor-manifest.yaml
 ```
 
-Adjust the namespace in the two files to match yours (for example, ***gitops-flux**).
+Adjust the namespace in the two files (***flux-system***) to match yours (for example, ***gitops-flux***).
 
 Send the files to the cluster:
 
@@ -567,7 +685,7 @@ flux uninstall --namespace=gitops-flux
 Then remove any leftovers (if any and depending on what you tested)
 
 ```bash
-kubectl delete ns prd
+kubectl delete namespace prd
 ```
 
 ```bash
@@ -768,7 +886,7 @@ argocd app get gitops-app
 
 Explore the information.
 
-Pay attention to this line URL: <https://SOME-IP/applications/gitops-app>
+Pay attention to this line URL: <https://ARGOCD-IP/applications/gitops-app>
 
 Open a browser and visit the above.
 
@@ -842,7 +960,29 @@ argocd app get gitops-app --output tree
 argocd app get gitops-app --show-operation --output tree
 ```
 
-You can run the **GitOps** pipeline (in **Jenkins**) and observe **ArgoCD**'s reaction.
+You could go ahead and change the application. For example, add some text to the **gitops-app/app/index.php** file.
+
+Then stage, commit and push the changes to the repository
+
+```bash
+git add .
+```
+
+```bash
+git commit -m "application change 5"
+```
+
+```bash
+git push
+```
+
+Now, return to Jenkins UI and start the **pipeline-gitops** pipeline again.
+
+*Note that we are starting it manually for the sake of simplicity. In the real life it would be configured to trigger automatically via a webhook or by polling the repository periodically for changes.*
+
+After a while, the new version of our application will be deployed to the cluster because the GitOps operator (ArgoCD in our case) will capture that there is a change in the desired state and will make sure that the actual state is matching the desired one.
+
+Once the pipeline completes, you can observe the changes that will take place in the cluster
 
 After up to ***3 minutes*** **ArgoCD** will sync the application with the current state in Git.
 
@@ -870,7 +1010,53 @@ argocd app create gitops-app-helm --repo http://GITEA-IP:3000/GITEA-USER/gitops-
 
 Now, either use the UI or the ususal commands that you are already aware of, to explore our application and its state.
 
+```bash
+argocd app list
+```
+
+```bash
+argocd app get gitops-app-helm
+```
+
 Should you want, you can trigger the **GitOps** pipeline again and observe.
+
+You could go ahead and change the application. For example, add some text to the **gitops-app/app/index.php** file.
+
+Then stage, commit and push the changes to the repository
+
+```bash
+git add .
+```
+
+```bash
+git commit -m "application change 6"
+```
+
+```bash
+git push
+```
+
+Now, return to Jenkins UI and start the **pipeline-gitops** pipeline again.
+
+*Note that we are starting it manually for the sake of simplicity. In the real life it would be configured to trigger automatically via a webhook or by polling the repository periodically for changes.*
+
+After a while, the new version of our application will be deployed to the cluster because the GitOps operator (ArgoCD in our case) will capture that there is a change in the desired state and will make sure that the actual state is matching the desired one.
+
+Once the pipeline completes, you can observe the changes that will take place in the cluster
+
+After up to ***3 minutes*** **ArgoCD** will sync the application with the current state in Git.
+
+Of course, if we do not want to wait, we can execute the synchronization manually either from the UI or on the command line
+
+```bash
+argocd app sync gitops-app-helm
+```
+
+Check the application's history (if you triggered the **GitOps** pipeline)
+
+```bash
+argocd app history gitops-app-helm
+```
 
 #### Create Application (kustomize)
 
@@ -884,7 +1070,53 @@ argocd app create gitops-app-kust --repo http://GITEA-IP:3000/GITEA-USER/gitops-
 
 Now, either use the UI or the ususal commands that you are already aware of, to explore our application and its state.
 
+```bash
+argocd app list
+```
+
+```bash
+argocd app get gitops-app-kust
+```
+
 Should you want, you can trigger the **GitOps** pipeline again and observe.
+
+You could go ahead and change the application. For example, add some text to the **gitops-app/app/index.php** file.
+
+Then stage, commit and push the changes to the repository
+
+```bash
+git add .
+```
+
+```bash
+git commit -m "application change 7"
+```
+
+```bash
+git push
+```
+
+Now, return to Jenkins UI and start the **pipeline-gitops** pipeline again.
+
+*Note that we are starting it manually for the sake of simplicity. In the real life it would be configured to trigger automatically via a webhook or by polling the repository periodically for changes.*
+
+After a while, the new version of our application will be deployed to the cluster because the GitOps operator (ArgoCD in our case) will capture that there is a change in the desired state and will make sure that the actual state is matching the desired one.
+
+Once the pipeline completes, you can observe the changes that will take place in the cluster
+
+After up to ***3 minutes*** **ArgoCD** will sync the application with the current state in Git.
+
+Of course, if we do not want to wait, we can execute the synchronization manually either from the UI or on the command line
+
+```bash
+argocd app sync gitops-app-kust
+```
+
+Check the application's history (if you triggered the **GitOps** pipeline)
+
+```bash
+argocd app history gitops-app-kust
+```
 
 #### Complete Removal
 

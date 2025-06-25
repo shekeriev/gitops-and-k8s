@@ -206,14 +206,18 @@ Navigate to the folder you plan to use for the demo and clone the two repositori
 The one for the application's code
 
 ```bash
-git clone http://192.168.99.51:3000/dimitar/gitops-app
+git clone http://GITEA-IP:3000/GITEA-USER/gitops-app
 ```
+
+*You must substitute **GITEA-IP** and **GITEA-USER** with your values.*
 
 And the one for the infrastructure files
 
 ```bash
-git clone http://192.168.99.51:3000/dimitar/gitops-app-infra
+git clone http://GITEA-IP:3000/GITEA-USER/gitops-app-infra
 ```
+
+*You must substitute **GITEA-IP** and **GITEA-USER** with your values.*
 
 ## Jenkins - Pipelines
 
