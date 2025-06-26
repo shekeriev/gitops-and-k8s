@@ -24,15 +24,15 @@ From a workload/component point of view, the demo environment configuration look
 
 ![image](README.png)
 
-The actual demonstration uses a single all-in-one Kubernetes cluster created with ***minikube***. Of course, another setup, either on-premises or in the cloud, could be used. Depending on the difference, the demo script/steps may need some adjustment.
+The actual demonstration uses a single all-in-one Kubernetes cluster created with ***minikube***. Of course, another setup, either on-premises or in the cloud, could be used. Depending on the difference, the demo script/steps may need some adjustments.
 
 ## Video
 
-A recording of the actual presentation (with a tiny demo part - just a portion of the steps described in this repository) will be published by **Dev.bg** on their channel(s).
+A recording of the actual presentation (with a tiny demo part - just a portion of the steps described in this repository) will be published by **Dev.bg** on their channel(s). Check here: <https://www.youtube.com/@dev-bg>
 
-A separate recording of the complete demo that will give you a basis for comparisson between **Flux CD** and **ArgoCD** is (will be, after 22.06) available here: <https://www.youtube.com/@DimitarZahariev>
+A separate recording of the complete demo that gives a basis for comparison between **Flux CD** and **ArgoCD** is available here (the channel): <https://www.youtube.com/@DimitarZahariev> and here (the video in question): <https://youtu.be/hPzzAm1ktP0>
 
-For best experience watch both and go over the demo steps alone. :)
+For the best experience, watch both and then try the demo steps alone. :)
 
 ## Related content
 
